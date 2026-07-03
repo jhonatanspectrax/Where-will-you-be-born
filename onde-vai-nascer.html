@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Onde Você Vai Nascer?</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap');
+
+:root{
+  --navy-950:#070f1c;
+  --navy-900:#0b1a2b;
+  --navy-800:#122238;
+  --navy-700:#17304c;
+  --brass:#c9a24b;
+  --brass-bright:#e6c877;
+  --cream:#f1e9d8;
+  --cream-dim:#b9b2a0;
+  --teal:#4fb8a8;
+  --rule:#2a4160;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(ellipse at 20% -10%, rgba(201,162,75,0.08), transparent 55%),
+    radial-gradient(ellipse at 90% 10%, rgba(79,184,168,0.06), transparent 50%),
+    linear-gradient(180deg, var(--navy-950) 0%, var(--navy-900) 45%, var(--navy-950) 100%);
+  color:var(--cream);
+  font-family:'Inter', sans-serif;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:56px 20px 80px;
+  position:relative;
+  overflow-x:hidden;
+}
+
+/* faint starfield */
+.stars{
+  position:fixed; inset:0; pointer-events:none; z-index:0;
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, rgba(241,233,216,0.35) 50%, transparent 51%),
+    radial-gradient(1px 1px at 80% 15%, rgba(241,233,216,0.25) 50%, transparent 51%),
+    radial-gradient(1px 1px at 60% 60%, rgba(241,233,216,0.3) 50%, transparent 51%),
+    radial-gradient(1px 1px at 30% 80%, rgba(241,233,216,0.2) 50%, transparent 51%),
+    radial-gradient(1px 1px at 45% 35%, rgba(201,162,75,0.3) 50%, transparent 51%),
+    radial-gradient(1px 1px at 90% 70%, rgba(241,233,216,0.25) 50%, transparent 51%),
+    radial-gradient(1px 1px at 15% 55%, rgba(241,233,216,0.2) 50%, transparent 51%),
+    radial-gradient(1px 1px at 70% 90%, rgba(201,162,75,0.25) 50%, transparent 51%);
+  background-size:100% 100%;
+  opacity:0.8;
+}
+
+.wrap{ position:relative; z-index:1; width:100%; max-width:720px; display:flex; flex-direction:column; align-items:center; }
+
+.eyebrow{
+  font-family:'Space Mono', monospace;
+  font-size:11px;
+  letter-spacing:0.28em;
+  text-transform:uppercase;
+  color:var(--brass);
+  margin-bottom:14px;
+  text-align:center;
+}
+.eyebrow::before, .eyebrow::after{ content:"—"; margin:0 10px; color:var(--rule); }
+
+h1{
+  font-family:'Fraunces', serif;
+  font-weight:600;
+  font-size:clamp(32px, 6vw, 52px);
+  line-height:1.05;
+  text-align:center;
+  margin:0 0 16px;
+  letter-spacing:-0.01em;
+}
+h1 em{ font-style:italic; color:var(--brass-bright); font-weight:500; }
+
+.sub{
+  text-align:center;
+  color:var(--cream-dim);
+  max-width:480px;
+  font-size:15px;
+  line-height:1.6;
+  margin:0 0 40px;
+}
+.sub b{ color:var(--cream); font-weight:600; }
+
+/* ---- Board ---- */
+.board{
+  width:100%;
+  background:linear-gradient(180deg, var(--navy-800), var(--navy-900));
+  border:1px solid var(--rule);
+  border-radius:10px;
+  box-shadow:
+    0 30px 60px -20px rgba(0,0,0,0.6),
+    inset 0 1px 0 rgba(255,255,255,0.03);
+  padding:28px 28px 24px;
+  position:relative;
+}
+.board::before{
+  content:"";
+  position:absolute; top:0; left:22px; right:22px; height:1px;
+  background:linear-gradient(90deg, transparent, var(--brass), transparent);
+  opacity:0.5;
+}
+
+.board-header{
+  display:flex; justify-content:space-between; align-items:center;
+  font-family:'Space Mono', monospace;
+  font-size:10px;
+  letter-spacing:0.15em;
+  text-transform:uppercase;
+  color:var(--cream-dim);
+  margin-bottom:16px;
+}
+.board-header .dot{ width:6px; height:6px; border-radius:50%; background:var(--brass); display:inline-block; margin-right:6px; animation:blink 2.4s infinite; }
+@keyframes blink{ 0%,100%{opacity:1;} 50%{opacity:0.25;} }
+
+.flap-row{
+  display:flex; align-items:stretch; gap:6px; margin-bottom:10px; justify-content:center; flex-wrap:wrap;
+}
+.flap{
+  perspective:400px;
+  min-width:34px; height:56px; flex:0 1 auto;
+}
+.flap-inner{
+  width:100%; height:100%;
+  background:linear-gradient(180deg, #1c3350 0%, #14273f 100%);
+  border:1px solid var(--rule);
+  border-radius:4px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Space Mono', monospace;
+  font-weight:700;
+  font-size:26px;
+  color:var(--brass-bright);
+  position:relative;
+  transition:transform 0.12s ease;
+  transform-style:preserve-3d;
+}
+.flap-inner::after{
+  content:""; position:absolute; left:0; right:0; top:50%; height:1px;
+  background:rgba(0,0,0,0.45);
+}
+.flap-inner.flipping{ animation:flipflap 0.15s ease; }
+@keyframes flipflap{
+  0%{ transform:rotateX(0deg); }
+  50%{ transform:rotateX(-90deg); }
+  100%{ transform:rotateX(0deg); }
+}
+
+.stat-row{
+  display:flex; gap:10px; margin-top:18px;
+}
+.stat{
+  flex:1;
+  background:var(--navy-950);
+  border:1px solid var(--rule);
+  border-radius:6px;
+  padding:14px 14px 12px;
+  text-align:center;
+}
+.stat .label{
+  font-family:'Space Mono', monospace;
+  font-size:9px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--cream-dim);
+  margin-bottom:6px;
+}
+.stat .value{
+  font-family:'Space Mono', monospace;
+  font-size:20px;
+  font-weight:700;
+  color:var(--cream);
+}
+.stat .value.flagbig{ font-size:34px; }
+.stat .value.gold{ color:var(--brass-bright); }
+.stat .value.teal{ color:var(--teal); }
+
+/* ---- Button ---- */
+.spin-btn{
+  margin-top:32px;
+  font-family:'Space Mono', monospace;
+  font-size:13px;
+  letter-spacing:0.16em;
+  text-transform:uppercase;
+  background:var(--brass);
+  color:var(--navy-950);
+  border:none;
+  padding:16px 40px;
+  border-radius:100px;
+  cursor:pointer;
+  font-weight:700;
+  box-shadow:0 10px 30px -8px rgba(201,162,75,0.5);
+  transition:transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.spin-btn:hover{ transform:translateY(-2px); box-shadow:0 14px 34px -8px rgba(201,162,75,0.65); background:var(--brass-bright); }
+.spin-btn:active{ transform:translateY(0px) scale(0.98); }
+.spin-btn:disabled{ opacity:0.5; cursor:default; transform:none; box-shadow:none; }
+
+.hint{
+  margin-top:14px;
+  font-size:12px;
+  color:var(--cream-dim);
+  text-align:center;
+}
+
+/* ---- Stamp on reveal ---- */
+.stamp{
+  opacity:0; transform:scale(1.3) rotate(-8deg);
+  position:absolute; top:14px; right:18px;
+  font-family:'Space Mono', monospace;
+  font-size:10px;
+  letter-spacing:0.1em;
+  color:var(--teal);
+  border:1.5px solid var(--teal);
+  border-radius:6px;
+  padding:5px 9px;
+  text-transform:uppercase;
+  pointer-events:none;
+  transition:all 0.5s cubic-bezier(.2,1.4,.4,1);
+}
+.stamp.show{ opacity:1; transform:scale(1) rotate(-8deg); }
+
+/* ---- table toggle ---- */
+.table-toggle{
+  margin-top:26px;
+  background:none;
+  border:none;
+  color:var(--cream-dim);
+  font-family:'Inter', sans-serif;
+  font-size:13px;
+  text-decoration:underline;
+  text-underline-offset:3px;
+  cursor:pointer;
+}
+.table-toggle:hover{ color:var(--brass-bright); }
+
+.table-wrap{
+  width:100%; max-width:720px;
+  margin-top:16px;
+  max-height:0;
+  overflow:hidden;
+  transition:max-height 0.4s ease;
+}
+.table-wrap.open{ max-height:2000px; }
+.prob-table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+  background:var(--navy-800);
+  border:1px solid var(--rule);
+  border-radius:8px;
+  overflow:hidden;
+}
+.prob-table th, .prob-table td{
+  padding:9px 12px;
+  text-align:left;
+  border-bottom:1px solid var(--rule);
+}
+.prob-table th{
+  font-family:'Space Mono', monospace;
+  font-size:10px;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:var(--brass);
+  background:var(--navy-950);
+}
+.prob-table td.num{ font-family:'Space Mono', monospace; text-align:right; color:var(--teal); }
+.prob-table tr:last-child td{ border-bottom:none; }
+.prob-table tbody tr:hover{ background:rgba(201,162,75,0.06); }
+
+footer{
+  margin-top:48px;
+  text-align:center;
+  font-size:11px;
+  color:var(--rule);
+  font-family:'Space Mono', monospace;
+  letter-spacing:0.05em;
+}
+
+/* confetti */
+.confetti-piece{
+  position:fixed; top:-20px; z-index:5; pointer-events:none;
+  border-radius:1px;
+}
+
+@media (max-width:520px){
+  .flap{ min-width:24px; height:42px; }
+  .flap-inner{ font-size:18px; }
+  .stat-row{ flex-wrap:wrap; }
+  .stat{ min-width:calc(50% - 5px); }
+}
+</style>
+</head>
+<body>
+<div class="stars"></div>
+<div class="wrap">
+  <div class="eyebrow">painel de partidas · destino aleatório</div>
+  <h1>Onde você vai <em>nascer?</em></h1>
+  <p class="sub">Gire o painel e descubra. Cada um dos <b id="countryCount">—</b> países do mundo entra no sorteio com uma chance proporcional à sua <b>população real</b> — nascer na China é mais provável do que nascer em Nauru.</p>
+
+  <div class="board">
+    <div class="stamp" id="stamp">passaporte emitido</div>
+    <div class="board-header">
+      <span><span class="dot"></span>SORTEIO AO VIVO</span>
+      <span id="statusText">pronto para girar</span>
+    </div>
+    <div class="flap-row" id="flapRow"></div>
+
+    <div class="stat-row">
+      <div class="stat">
+        <div class="label">Bandeira</div>
+        <div class="value flagbig" id="statFlag">🌍</div>
+      </div>
+      <div class="stat">
+        <div class="label">População</div>
+        <div class="value" id="statPop">—</div>
+      </div>
+      <div class="stat">
+        <div class="label">Probabilidade</div>
+        <div class="value gold" id="statProb">—</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="spin-btn" id="spinBtn">Girar o Globo</button>
+  <div class="hint">Baseado em estimativas de população 2024 · quanto mais gente, maior a chance</div>
+
+  <button class="table-toggle" id="tableToggle">ver tabela completa de probabilidades ↓</button>
+  <div class="table-wrap" id="tableWrap">
+    <table class="prob-table">
+      <thead><tr><th>#</th><th>País</th><th>Bandeira</th><th class="num">População (mi)</th><th class="num">Probabilidade</th></tr></thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <footer>SORTEIO GLOBAL DE NASCIMENTO — 195 DESTINOS POSSÍVEIS</footer>
+</div>
+
+<script>
+// [código ISO, nome em português, população aproximada em milhões]
+const COUNTRIES = [
+["CN","China",1412],["IN","Índia",1428],["US","Estados Unidos",335],["ID","Indonésia",277],
+["PK","Paquistão",240],["NG","Nigéria",223],["BR","Brasil",216],["BD","Bangladesh",173],
+["RU","Rússia",144],["MX","México",128],["ET","Etiópia",126],["JP","Japão",123],
+["PH","Filipinas",117],["EG","Egito",112],["CD","Rep. Dem. do Congo",102],["VN","Vietnã",98],
+["IR","Irã",89],["TR","Turquia",85],["DE","Alemanha",84],["TH","Tailândia",71],
+["GB","Reino Unido",68],["FR","França",68],["TZ","Tanzânia",67],["ZA","África do Sul",60],
+["IT","Itália",59],["KE","Quênia",55],["MM","Mianmar",54],["CO","Colômbia",52],
+["KR","Coreia do Sul",52],["SD","Sudão",48],["UG","Uganda",48],["ES","Espanha",47],
+["AR","Argentina",46],["DZ","Argélia",45],["IQ","Iraque",45],["AF","Afeganistão",42],
+["CA","Canadá",39],["PL","Polônia",38],["MA","Marrocos",37],["SA","Arábia Saudita",36],
+["AO","Angola",36],["UA","Ucrânia",36],["UZ","Uzbequistão",35],["YE","Iêmen",34],
+["PE","Peru",34],["MY","Malásia",34],["MZ","Moçambique",33],["GH","Gana",33],
+["MG","Madagascar",30],["NP","Nepal",30],["VE","Venezuela",28],["CI","Costa do Marfim",28],
+["CM","Camarões",28],["NE","Níger",27],["AU","Austrália",26],["KP","Coreia do Norte",26],
+["SY","Síria",23],["ML","Mali",23],["BF","Burkina Faso",23],["LK","Sri Lanka",22],
+["MW","Malaui",20],["ZM","Zâmbia",20],["KZ","Cazaquistão",20],["RO","Romênia",19],
+["CL","Chile",19],["EC","Equador",18],["GT","Guatemala",18],["NL","Holanda",18],
+["SN","Senegal",18],["SO","Somália",18],["TD","Chade",18],["KH","Camboja",17],
+["ZW","Zimbábue",16],["GN","Guiné",14],["RW","Ruanda",14],["BJ","Benin",13],
+["BI","Burundi",13],["SS","Sudão do Sul",11],["TN","Tunísia",12],["BO","Bolívia",12],
+["BE","Bélgica",12],["CU","Cuba",11],["HT","Haiti",11],["DO","Rep. Dominicana",11],
+["CZ","Tchéquia",11],["JO","Jordânia",11],["SE","Suécia",10],["GR","Grécia",10],
+["PT","Portugal",10],["AZ","Azerbaijão",10],["HU","Hungria",10],["AE","Emirados Árabes",10],
+["HN","Honduras",10],["TJ","Tajiquistão",10],["PG","Papua-Nova Guiné",10],["BY","Bielorrússia",9],
+["IL","Israel",9],["AT","Áustria",9],["CH","Suíça",9],["TG","Togo",9],
+["SL","Serra Leoa",8],["LA","Laos",8],["RS","Sérvia",7],["PY","Paraguai",7],
+["BG","Bulgária",7],["LY","Líbia",7],["NI","Nicarágua",7],["KG","Quirguistão",7],
+["SV","El Salvador",6],["TM","Turcomenistão",6],["SG","Cingapura",6],["DK","Dinamarca",6],
+["FI","Finlândia",6],["CG","Congo",6],["LB","Líbano",5],["NO","Noruega",5],
+["SK","Eslováquia",5],["CR","Costa Rica",5],["PS","Palestina",5],["NZ","Nova Zelândia",5],
+["IE","Irlanda",5],["OM","Omã",5],["LR","Libéria",5],["CF","Rep. Centro-Africana",5],
+["MR","Mauritânia",5],["KW","Kuwait",4],["PA","Panamá",4],["HR","Croácia",4],
+["GE","Geórgia",4],["ER","Eritreia",4],["MD","Moldávia",2.5],["UY","Uruguai",3],
+["BA","Bósnia e Herzegovina",3],["MN","Mongólia",3],["AM","Armênia",3],["JM","Jamaica",3],
+["AL","Albânia",3],["LT","Lituânia",3],["QA","Catar",3],["NA","Namíbia",3],
+["GM","Gâmbia",3],["GQ","Guiné Equatorial",1.7],["BW","Botsuana",2],["GA","Gabão",2],
+["SI","Eslovênia",2],["MK","Macedônia do Norte",2],["LV","Letônia",2],["GW","Guiné-Bissau",2],
+["BH","Bahrein",2],["XK","Kosovo",1.8],["TT","Trinidad e Tobago",1.5],["TL","Timor-Leste",1.4],
+["EE","Estônia",1.3],["MU","Maurício",1.3],["CY","Chipre",1.3],["SZ","Essuatíni",1.2],
+["DJ","Djibuti",1.1],["FJ","Fiji",0.9],["KM","Comores",0.9],["GY","Guiana",0.8],
+["BT","Butão",0.8],["SB","Ilhas Salomão",0.7],["ME","Montenegro",0.6],["LU","Luxemburgo",0.6],
+["SR","Suriname",0.6],["CV","Cabo Verde",0.6],["MT","Malta",0.5],["MV","Maldivas",0.5],
+["BN","Brunei",0.4],["BZ","Belize",0.4],["BS","Bahamas",0.4],["IS","Islândia",0.4],
+["VU","Vanuatu",0.3],["BB","Barbados",0.3],["WS","Samoa",0.2],["ST","São Tomé e Príncipe",0.2],
+["LC","Santa Lúcia",0.2],["KI","Kiribati",0.1],["GD","Granada",0.1],["TO","Tonga",0.1],
+["FM","Micronésia",0.1],["SC","Seicheles",0.1],["AG","Antígua e Barbuda",0.1],["AD","Andorra",0.08],
+["DM","Dominica",0.07],["MH","Ilhas Marshall",0.06],["KN","São Cristóvão e Névis",0.05],
+["MC","Mônaco",0.04],["LI","Liechtenstein",0.04],["SM","San Marino",0.03],["PW","Palau",0.02],
+["NR","Nauru",0.01],["TV","Tuvalu",0.01],["VA","Vaticano",0.0008]
+];
+
+function flagEmoji(code){
+  return String.fromCodePoint(...[...code.toUpperCase()].map(c => 127397 + c.charCodeAt(0)));
+}
+
+const totalPop = COUNTRIES.reduce((s,c)=>s+c[2],0);
+const data = COUNTRIES.map(c => ({
+  code:c[0], name:c[1], pop:c[2], flag:flagEmoji(c[0]), prob:(c[2]/totalPop)*100
+})).sort((a,b)=>b.pop-a.pop);
+
+document.getElementById('countryCount').textContent = data.length;
+
+// populate table
+const tbody = document.getElementById('tableBody');
+data.forEach((d,i)=>{
+  const tr = document.createElement('tr');
+  const probText = d.prob < 0.001 ? d.prob.toFixed(5)+'%' : d.prob < 0.01 ? d.prob.toFixed(4)+'%' : d.prob.toFixed(3)+'%';
+  tr.innerHTML = `<td>${i+1}</td><td>${d.name}</td><td>${d.flag}</td><td class="num">${d.pop.toLocaleString('pt-BR')}</td><td class="num">${probText}</td>`;
+  tbody.appendChild(tr);
+});
+
+document.getElementById('tableToggle').addEventListener('click', function(){
+  const w = document.getElementById('tableWrap');
+  const open = w.classList.toggle('open');
+  this.textContent = open ? 'ocultar tabela completa ↑' : 'ver tabela completa de probabilidades ↓';
+});
+
+// weighted pick
+function weightedPick(){
+  let r = Math.random() * totalPop;
+  for(const c of COUNTRIES){
+    r -= c[2];
+    if(r <= 0) return c;
+  }
+  return COUNTRIES[COUNTRIES.length-1];
+}
+
+// build flap row for a given text, sized to longest expected name padded
+const MAXLEN = 20;
+const flapRow = document.getElementById('flapRow');
+let flapEls = [];
+
+function buildFlaps(text){
+  flapRow.innerHTML = '';
+  flapEls = [];
+  const padded = text.toUpperCase().padEnd(text.length, ' ');
+  for(let ch of padded){
+    const flap = document.createElement('div');
+    flap.className = 'flap';
+    const inner = document.createElement('div');
+    inner.className = 'flap-inner';
+    inner.textContent = ch === ' ' ? '' : ch;
+    flap.appendChild(inner);
+    flapRow.appendChild(flap);
+    flapEls.push(inner);
+  }
+}
+
+function setFlapsText(text, flipping){
+  const chars = text.toUpperCase().split('');
+  // resize if needed
+  if(chars.length !== flapEls.length){
+    buildFlaps(text);
+    return;
+  }
+  chars.forEach((ch, i)=>{
+    const el = flapEls[i];
+    if(flipping){
+      el.classList.remove('flipping');
+      void el.offsetWidth;
+      el.classList.add('flipping');
+    }
+    el.textContent = ch === ' ' ? '' : ch;
+  });
+}
+
+buildFlaps('BRASIL');
+
+const spinBtn = document.getElementById('spinBtn');
+const statusText = document.getElementById('statusText');
+const statFlag = document.getElementById('statFlag');
+const statPop = document.getElementById('statPop');
+const statProb = document.getElementById('statProb');
+const stamp = document.getElementById('stamp');
+
+function randomName(){
+  return COUNTRIES[Math.floor(Math.random()*COUNTRIES.length)][1];
+}
+
+function confettiBurst(){
+  const colors = ['#c9a24b','#e6c877','#f1e9d8','#4fb8a8'];
+  for(let i=0;i<70;i++){
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    const size = 4 + Math.random()*6;
+    el.style.width = size+'px';
+    el.style.height = (size*0.4)+'px';
+    el.style.left = Math.random()*100+'vw';
+    el.style.background = colors[Math.floor(Math.random()*colors.length)];
+    el.style.transform = `rotate(${Math.random()*360}deg)`;
+    const duration = 2.2 + Math.random()*1.6;
+    const drift = (Math.random()*160 - 80);
+    el.animate([
+      { transform:`translate(0,0) rotate(0deg)`, opacity:1 },
+      { transform:`translate(${drift}px, 100vh) rotate(${360+Math.random()*360}deg)`, opacity:0.9 }
+    ], { duration: duration*1000, easing:'cubic-bezier(.25,.46,.45,.94)' });
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(), duration*1000+100);
+  }
+}
+
+let spinning = false;
+
+function spin(){
+  if(spinning) return;
+  spinning = true;
+  spinBtn.disabled = true;
+  stamp.classList.remove('show');
+  statusText.textContent = 'girando...';
+  statFlag.textContent = '🌍';
+  statPop.textContent = '—';
+  statProb.textContent = '—';
+
+  const winner = weightedPick();
+  const winnerName = winner[1].toUpperCase();
+
+  let step = 0;
+  const totalSteps = 26;
+
+  function tick(){
+    step++;
+    let delay;
+    // ease-out: fast then slow, and lock in near the end
+    const progress = step/totalSteps;
+    if(step >= totalSteps){
+      setFlapsText(winnerName, true);
+      finish(winner);
+      return;
+    }
+    if(progress < 0.55){
+      delay = 55;
+      setFlapsText(randomName(), true);
+    } else {
+      delay = 55 + (progress-0.55)*900;
+      setFlapsText(randomName(), true);
+    }
+    setTimeout(tick, delay);
+  }
+  tick();
+}
+
+function finish(winner){
+  const code = winner[0], name = winner[1], pop = winner[2];
+  const flag = flagEmoji(code);
+  const prob = (pop/totalPop)*100;
+  const probText = prob < 0.001 ? prob.toFixed(5)+'%' : prob < 0.01 ? prob.toFixed(4)+'%' : prob.toFixed(3)+'%';
+
+  statFlag.textContent = flag;
+  statPop.textContent = pop.toLocaleString('pt-BR') + ' mi';
+  statProb.textContent = probText;
+  statusText.textContent = 'destino confirmado';
+  stamp.classList.add('show');
+  confettiBurst();
+
+  spinning = false;
+  spinBtn.disabled = false;
+}
+
+spinBtn.addEventListener('click', spin);
+</script>
+</body>
+</html>
